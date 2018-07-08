@@ -1,0 +1,14 @@
+language: cpp
+before_script:
+- sudo apt-get install libboost-test-dev -y
+script:
+- cmake .
+- cmake --build .
+#- cmake --build . --target test
+deploy:
+  provider: script
+  skip_cleanup: true
+  script:
+  - curl -T ip_filter -u artbataev:$BINTRAY_API_KEY "https://api.bintray.com/content/vladimirbataev/otus_cpp_2/ip-filter-artbataev/$TRAVIS_BUILD_NUMBER/ip_filter;publish=1"
+  on:
+    branch: master
