@@ -5,6 +5,8 @@
 #include <sstream>
 #include <fstream>
 
+#include "ip_filter.h"
+
 // ("",  '.') -> [""]
 // ("11", '.') -> ["11"]
 // ("..", '.') -> ["", "", ""]
@@ -94,7 +96,7 @@ bool is_matched_any(IP_ADDRESS::const_iterator ip_address_begin,
 }
 
 
-int main(int argc, char const *argv[]) {
+int main() {
     try {
 
         IP_POOL ip_pool;
