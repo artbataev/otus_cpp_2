@@ -98,9 +98,9 @@ int main(int argc, char const *argv[]) {
     try {
 
         IP_POOL ip_pool;
-        std::fstream from("../data/ip_filter.tsv");
-        from >> ip_pool;
-//        std::cin >> ip_pool;
+//        std::fstream from("../data/ip_filter.tsv");
+//        from >> ip_pool;
+        std::cin >> ip_pool;
 
         // reverse lexicographically sort
         std::sort(ip_pool.rbegin(), ip_pool.rend());
