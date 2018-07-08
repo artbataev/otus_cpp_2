@@ -4,6 +4,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 #include "ip_filter.h"
 
