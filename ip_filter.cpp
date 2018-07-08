@@ -65,14 +65,42 @@ std::istream& operator>>(std::istream& stream, IP_POOL& ip_pool) {
     return stream;
 }
 
+bool is_matched(IP_ADDRESS::const_iterator ip_address_begin,
+                IP_ADDRESS::const_iterator ip_address_end,
+                int first_value) {
+    if (ip_address_begin >= ip_address_end) return false;
+    return (*ip_address_begin == first_value);
+}
+
+template<typename... Args>
+bool is_matched(IP_ADDRESS::const_iterator ip_address_begin,
+                IP_ADDRESS::const_iterator ip_address_end,
+                int first_value, Args... values) {
+    if (ip_address_begin >= ip_address_end) return false;
+    if (*ip_address_begin != first_value) return false;
+    if (sizeof...(values) == 0) return true;
+    return is_matched(ip_address_begin + 1, ip_address_end, values...);
+}
+
+bool is_matched_any(IP_ADDRESS::const_iterator ip_address_begin,
+                IP_ADDRESS::const_iterator ip_address_end,
+                int value) {
+    auto current_pointer = ip_address_begin;
+    while (current_pointer < ip_address_end) {
+        if(*current_pointer == value) return true;
+        current_pointer++;
+    }
+    return false;
+}
+
 
 int main(int argc, char const *argv[]) {
     try {
 
         IP_POOL ip_pool;
-//        std::fstream from("../data/ip_filter.tsv");
-//        from >> ip_pool;
-        std::cin >> ip_pool;
+        std::fstream from("../data/ip_filter.tsv");
+        from >> ip_pool;
+//        std::cin >> ip_pool;
 
         // reverse lexicographically sort
         std::sort(ip_pool.rbegin(), ip_pool.rend());
@@ -86,11 +114,13 @@ int main(int argc, char const *argv[]) {
         // 1.29.168.152
         // 1.1.234.8
 
-        // TODO filter by first byte and output
-        auto filter = [ip_pool](const auto& value) {
+        // filter by first byte and output
+        // ip = filter(1)
+        // to match signature - use lambda + variadic template
+        auto filter = [ip_pool](const auto& ... values) {
             IP_POOL filtered_pool;
             for (const auto& ip:ip_pool) {
-                if (ip[0] == value) {
+                if (is_matched(ip.begin(), ip.end(), values...)) {
                     filtered_pool.push_back(ip);
                 }
             }
@@ -105,18 +135,9 @@ int main(int argc, char const *argv[]) {
         // 1.29.168.152
         // 1.1.234.8
 
-        // TODO filter by first and second bytes and output
-        auto filter2 = [ip_pool](const auto& value1, const auto& value2) {
-            IP_POOL filtered_pool;
-            for (const auto& ip:ip_pool) {
-                if (ip[0] == value1 && ip[1] == value2) {
-                    filtered_pool.push_back(ip);
-                }
-            }
-            return filtered_pool;
-        };
+        // filter by first and second bytes and output
         // ip = filter(46, 70)
-        auto filtered_pool_2 = filter2(46, 70);
+        auto filtered_pool_2 = filter(46, 70);
         std::cout << filtered_pool_2;
 
         // 46.70.225.39
@@ -124,15 +145,11 @@ int main(int argc, char const *argv[]) {
         // 46.70.113.73
         // 46.70.29.76
 
-        // TODO filter by any byte and output
+        // filter by any byte and output
         auto filter_any = [ip_pool](const auto& value) {
             IP_POOL filtered_pool;
             for (const auto& ip:ip_pool) {
-                bool use = false;
-                for (const auto& elem:ip) {
-                    use |= (elem == value);
-                }
-                if (use) {
+                if (is_matched_any(ip.begin(), ip.end(), value)) {
                     filtered_pool.push_back(ip);
                 }
             }
