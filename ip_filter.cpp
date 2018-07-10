@@ -31,10 +31,10 @@ std::vector<std::string> split(const std::string& str, char d) {
     return r;
 }
 
-using IP_ADDRESS = std::vector<int>;
-using IP_POOL = std::vector<IP_ADDRESS>;
+using IPAddress = std::vector<int>;
+using IPPool = std::vector<IPAddress>;
 
-std::ostream& operator<<(std::ostream& stream, const IP_ADDRESS& ip) {
+std::ostream& operator<<(std::ostream& stream, const IPAddress& ip) {
     for (auto ip_part = ip.cbegin(); ip_part != ip.cend(); ++ip_part) {
         if (ip_part != ip.cbegin()) {
             stream << ".";
@@ -45,18 +45,18 @@ std::ostream& operator<<(std::ostream& stream, const IP_ADDRESS& ip) {
     return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, const IP_POOL& ip_pool) {
+std::ostream& operator<<(std::ostream& stream, const IPPool& ip_pool) {
     for (const auto& ip:ip_pool) {
         stream << ip << std::endl;
     }
     return stream;
 }
 
-std::istream& operator>>(std::istream& stream, IP_POOL& ip_pool) {
+std::istream& operator>>(std::istream& stream, IPPool& ip_pool) {
     for (std::string line; std::getline(stream, line);) {
         std::vector<std::string> v = split(line, '\t');
         auto current_ip_str = split(v.at(0), '.');
-        IP_ADDRESS current_ip(current_ip_str.size());
+        IPAddress current_ip(current_ip_str.size());
         std::transform(current_ip_str.begin(), current_ip_str.end(), current_ip.begin(), [](std::string ip) {
             return std::stoi(ip);
         });
@@ -68,16 +68,16 @@ std::istream& operator>>(std::istream& stream, IP_POOL& ip_pool) {
     return stream;
 }
 
-bool is_matched(IP_ADDRESS::const_iterator ip_address_begin,
-                IP_ADDRESS::const_iterator ip_address_end,
+bool is_matched(IPAddress::const_iterator ip_address_begin,
+                IPAddress::const_iterator ip_address_end,
                 int first_value) {
     if (ip_address_begin >= ip_address_end) return false;
     return (*ip_address_begin == first_value);
 }
 
 template<typename... Args>
-bool is_matched(IP_ADDRESS::const_iterator ip_address_begin,
-                IP_ADDRESS::const_iterator ip_address_end,
+bool is_matched(IPAddress::const_iterator ip_address_begin,
+                IPAddress::const_iterator ip_address_end,
                 int first_value, Args... values) {
     if (ip_address_begin >= ip_address_end) return false;
     if (*ip_address_begin != first_value) return false;
@@ -85,8 +85,8 @@ bool is_matched(IP_ADDRESS::const_iterator ip_address_begin,
     return is_matched(ip_address_begin + 1, ip_address_end, values...);
 }
 
-bool is_matched_any(IP_ADDRESS::const_iterator ip_address_begin,
-                IP_ADDRESS::const_iterator ip_address_end,
+bool is_matched_any(IPAddress::const_iterator ip_address_begin,
+                IPAddress::const_iterator ip_address_end,
                 int value) {
     auto current_pointer = ip_address_begin;
     while (current_pointer < ip_address_end) {
@@ -100,7 +100,7 @@ bool is_matched_any(IP_ADDRESS::const_iterator ip_address_begin,
 int main() {
     try {
 
-        IP_POOL ip_pool;
+        IPPool ip_pool;
 //        std::fstream from("../data/ip_filter.tsv");
 //        from >> ip_pool;
         std::cin >> ip_pool;
@@ -119,9 +119,9 @@ int main() {
 
         // filter by first byte and output
         // ip = filter(1)
-        // to match signature - use lambda + variadic template
-        auto filter = [ip_pool](const auto& ... values) {
-            IP_POOL filtered_pool;
+        // use lambda + variadic template
+        auto filter = [](const auto& ip_pool, const auto& ... values) {
+            IPPool filtered_pool;
             for (const auto& ip:ip_pool) {
                 if (is_matched(ip.begin(), ip.end(), values...)) {
                     filtered_pool.push_back(ip);
@@ -129,7 +129,7 @@ int main() {
             }
             return filtered_pool;
         };
-        auto filtered_pool_1 = filter(1);
+        auto filtered_pool_1 = filter(ip_pool, 1);
         std::cout << filtered_pool_1;
 
         // 1.231.69.33
@@ -140,7 +140,7 @@ int main() {
 
         // filter by first and second bytes and output
         // ip = filter(46, 70)
-        auto filtered_pool_2 = filter(46, 70);
+        auto filtered_pool_2 = filter(ip_pool, 46, 70);
         std::cout << filtered_pool_2;
 
         // 46.70.225.39
@@ -149,8 +149,8 @@ int main() {
         // 46.70.29.76
 
         // filter by any byte and output
-        auto filter_any = [ip_pool](const auto& value) {
-            IP_POOL filtered_pool;
+        auto filter_any = [](const auto& ip_pool, const auto& value) {
+            IPPool filtered_pool;
             for (const auto& ip:ip_pool) {
                 if (is_matched_any(ip.begin(), ip.end(), value)) {
                     filtered_pool.push_back(ip);
@@ -159,7 +159,7 @@ int main() {
             return filtered_pool;
         };
         // ip = filter_any(46)
-        auto filtered_pool_3 = filter_any(46);
+        auto filtered_pool_3 = filter_any(ip_pool, 46);
         std::cout << filtered_pool_3;
 
 
